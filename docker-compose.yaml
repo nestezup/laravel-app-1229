@@ -9,6 +9,7 @@ services:
     working_dir: /var/www
     volumes:
       - storage_data:/var/www/storage
+      - ./:/var/www # 코드 전체 마운트 (public 포함, Coolify Git 배포와 호환)
     environment:
       APP_KEY: ${APP_KEY}
       APP_ENV: production
@@ -21,13 +22,18 @@ services:
       DB_USERNAME: ${DB_USERNAME:-laravel}
       DB_PASSWORD: ${DB_PASSWORD:-password}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    # PHP-FPM은 expose 필요 없음 (Nginx가 fastcgi_pass로 연결)
 
   nginx:
     image: nginx:alpine
     restart: always
+    expose:
+      # ports 제거! expose만 사용
+      - "80"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/conf.d:/etc/nginx/conf.d # Nginx config 마운트
       - ./public:/var/www/public
       - storage_data:/var/www/storage
     depends_on:
@@ -43,6 +49,12 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      # DB 시작 기다리게
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   storage_data:
