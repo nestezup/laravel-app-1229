@@ -1,9 +1,12 @@
+[variables]
+NIXPACKS_PHP_VERSION = "8.4"
+
 [phases.setup]
 nixPkgs = ["...", "python311Packages.supervisor"]
 
 [phases.build]
 cmds = [
-  "composer install --optimize-autoloader --no-dev --no-interaction",
+  "composer install --optimize-autoloader --no-dev --no-interaction --no-scripts",
   "npm install",
   "npm run build",
   "mkdir -p /etc/supervisor/conf.d/",
