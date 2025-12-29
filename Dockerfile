@@ -24,6 +24,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs
 
+# PHP-FPM이 모든 인터페이스에서 listen 하게 강제 설정
+RUN sed -i 's|^listen =.*|listen = 0.0.0.0:9000|' /usr/local/etc/php-fpm.d/www.conf
+
 # Set working directory
 WORKDIR /var/www
 
