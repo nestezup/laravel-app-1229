@@ -22,8 +22,6 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-password}
     depends_on:
       - mysql
-    networks:
-      - coolify-network
 
   nginx:
     image: nginx:alpine
@@ -36,8 +34,6 @@ services:
       - storage_data:/var/www/storage
     depends_on:
       - app
-    networks:
-      - coolify-network
 
   mysql:
     image: mysql:8.0
@@ -49,14 +45,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - coolify-network
 
 volumes:
   storage_data:
   mysql_data:
-
-
-networks:
-  coolify-network:
-    external: true
