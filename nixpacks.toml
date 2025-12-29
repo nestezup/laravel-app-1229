@@ -2,7 +2,7 @@
 NIXPACKS_PHP_VERSION = "8.4"
 
 [phases.setup]
-nixPkgs = ["...", "python311Packages.supervisor"]
+nixPkgs = ["php84", "php84Extensions.pdo_mysql", "php84Extensions.mbstring", "php84Extensions.curl", "php84Extensions.zip", "php84Extensions.bcmath", "php84Extensions.intl", "php84Extensions.gd", "nginx", "python311Packages.supervisor"]
 
 [phases.build]
 cmds = [
