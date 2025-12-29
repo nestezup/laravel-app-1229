@@ -9,7 +9,7 @@ services:
     working_dir: /var/www
     volumes:
       - storage_data:/var/www/storage
-      - ./:/var/www # 코드 전체 마운트 (public 포함, Coolify Git 배포와 호환)
+      - ./:/var/www # Git 배포 시 코드 전체 마운트 (필수)
     environment:
       APP_KEY: ${APP_KEY}
       APP_ENV: production
@@ -24,20 +24,27 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    # PHP-FPM은 expose 필요 없음 (Nginx가 fastcgi_pass로 연결)
 
   nginx:
     image: nginx:alpine
     restart: always
     expose:
-      # ports 제거! expose만 사용
       - "80"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d # Nginx config 마운트
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - ./public:/var/www/public
       - storage_data:/var/www/storage
     depends_on:
       - app
+    labels:
+      - "traefik.enable=true"
+      # 핵심: Traefik이 nginx 내부 포트 80으로 요청 보내게 강제 지정
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}-nginx.loadbalancer.server.port=80"
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mysql:
     image: mysql:8.0
@@ -50,7 +57,6 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      # DB 시작 기다리게
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       timeout: 5s
